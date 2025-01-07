@@ -1,2 +1,2 @@
 # gen-fast-reports
-Software para aprimorar a execução de relatório de trabalho
+Software para aprimorar a execução de relatórios de trabalho
