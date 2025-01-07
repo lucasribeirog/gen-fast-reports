@@ -1,4 +1,5 @@
 using gen_fast_report.Data;
+using gen_fast_report.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<StandardReportDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IUploadReportHandler, UploadReportHandler>();
 
 var app = builder.Build();
 
