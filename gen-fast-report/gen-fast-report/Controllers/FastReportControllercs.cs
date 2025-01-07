@@ -2,82 +2,73 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using gen_fast_report.Enums;
+using gen_fast_report.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace gen_fast_report.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FastReportControllercs : ControllerBase
+    public class FastReportControllercs(StandardReportDbContext context) : ControllerBase
     {
-        static private List<StandardReport> standardReports = new List<StandardReport>
+        private readonly StandardReportDbContext _context = context;
+
+        
+        [HttpGet]
+        public async Task<ActionResult<List<StandardReport>>> GetStandardReports()
         {
-            new StandardReport
-            {
-                Id = 1,
-                Name = "Padrao Balistica",
-                Area = Area.Balistica
-            },
-            new StandardReport
-            {
-                Id = 2,
-                Name = "Padrao Trânsito",
-                Area = Area.Transito
-            },
-            new StandardReport
-            {
-                Id = 3,
-                Name = "Padrao Vida",
-                Area = Area.Vida
-            },
-            new StandardReport
-            {
-                Id = 4,
-                Name = "Padrao Documentoscopia",
-                Area = Area.Documentoscopia
-            },
-            new StandardReport
-            {
-                Id = 5,
-                Name = "Padrao Meio Ambiente",
-                Area = Area.MeioAmbiente
-            }
-        };
+            return Ok(await _context.StandardReports.ToListAsync());
+        }
 
         [HttpGet]
-        public ActionResult<List<StandardReport>> GetStandardReports()
-        {
-            return Ok(standardReports);
-        }
-        [HttpGet]
         [Route("{id}")]
-        public ActionResult<StandardReport> GetStandardReportById(int id) 
-        { 
-            var standardReport = standardReports.FirstOrDefault(x => x.Id == id);
+        public async Task<ActionResult<StandardReport>> GetStandardReportById(int id)
+        {
+            var standardReport = await _context.StandardReports.FindAsync(id);
             if (standardReport is null)
                 return NotFound();
             return Ok(standardReport);
         }
 
         [HttpPost]
-        public ActionResult<StandardReport> AddStandardReport(StandardReport newStandardReport)
+        public async Task<ActionResult<StandardReport>> AddStandardReport(StandardReport newStandardReport)
         {
             if (newStandardReport is null)
                 return BadRequest();
 
-            newStandardReport.Id = standardReports.Max(x => x.Id) + 1;
-            standardReports.Add(newStandardReport);
-            return CreatedAtAction(nameof(GetStandardReportById), new { id = newStandardReport.Id}, newStandardReport);
+            
+            _context.StandardReports.Add(newStandardReport);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetStandardReportById), new { id = newStandardReport.Id }, newStandardReport);
         }
 
         [HttpPut]
         [Route("{id}")]
-        public IActionResult UpdateStandarReport(int id,  StandardReport updatedReport)
+        public async Task<IActionResult> UpdateStandarReport(int id, StandardReport updatedReport)
         {
-            var standardReport = standardReports.FirstOrDefault(x => x.Id == id);
+            var standardReport = await _context.StandardReports.FindAsync(id);
             if (standardReport is null)
                 return NotFound();
+
             standardReport.Name = updatedReport.Name;
             standardReport.Area = updatedReport.Area;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> DeleteStandarReport(int id)
+        {
+            var standardReport = await _context.StandardReports.FindAsync(id);
+            if (standardReport is null)
+                return NotFound();
+
+            _context.StandardReports.Remove(standardReport);
+            await _context.SaveChangesAsync();
 
             return NoContent();
         }
