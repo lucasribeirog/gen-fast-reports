@@ -17,7 +17,7 @@ namespace gen_fast_report.Data
                 {
                     Id = 1,
                     Name = "Padrao Balistica",
-                    Area = Area.Balistica
+                    Area = Area.Balistica,
                 },
                 new StandardReport
                 {

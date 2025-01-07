@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using gen_fast_report.Data;
 
@@ -10,9 +11,11 @@ using gen_fast_report.Data;
 namespace gen_fast_report.Migrations
 {
     [DbContext(typeof(StandardReportDbContext))]
-    partial class StandardReportDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250107134839_Update-Model")]
+    partial class UpdateModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
