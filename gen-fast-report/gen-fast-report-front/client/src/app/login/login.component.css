@@ -3,7 +3,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: linear-gradient(135deg, #2196f3, #21cbf3);
+    background: linear-gradient(135deg, #7d8185, #21cbf3);
   }
   
   .login-card {
@@ -11,7 +11,7 @@
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    background-color: #fff;
+    background-color: #ffffffdf;
   }
   
   .full-width {
