@@ -8,7 +8,7 @@ import { NavbarComponent } from './_components/navbar/navbar.component';
 import { FooterComponent } from './_components/footer/footer.component';
 import { BaseUiComponent } from './_components/base-ui/base-ui.component';
 import { ReportsComponent } from './pages/reports/reports.component';
-
+import { provideHttpClient } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,9 +20,11 @@ import { ReportsComponent } from './pages/reports/reports.component';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
   ],
-  providers: [],
+  providers: [
+    provideHttpClient()
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

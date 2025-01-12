@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ReportService } from '../../services/report.service';
+import { Report } from '../../types/report';
 
 @Component({
   selector: 'app-reports',
@@ -7,8 +9,19 @@ import { Component } from '@angular/core';
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
 })
-export class ReportsComponent {
-  reports: String[] = [
-    'Relatório 1', 'Relatório 2', 'Relatório 3'
-  ];
+export class ReportsComponent implements OnInit{
+  reports?: Report[];
+  
+  constructor(private reportService:ReportService){ }
+  
+  ngOnInit(): void {
+    this.fillReports()
+  }
+
+  fillReports(): void {
+    this.reportService.getReports()
+      .subscribe( (data :Report[]) => {
+        this.reports = data
+      });
+  }
 }
