@@ -1,5 +1,6 @@
 using gen_fast_report.Data;
 using gen_fast_report.Services;
+using gen_fast_report.Validators;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,9 +13,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<StandardReportDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), 
+sqlOptions => sqlOptions.EnableRetryOnFailure(
+    maxRetryCount:3,
+    maxRetryDelay: TimeSpan.FromSeconds(10),
+    errorNumbersToAdd: null)
+    )
+);
 builder.Services.AddScoped<IUploadReportHandler, UploadReportHandler>();
-
+builder.Services.AddScoped<IFileValidationService, FileValidationService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

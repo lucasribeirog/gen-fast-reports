@@ -6,14 +6,17 @@ using gen_fast_report.Data;
 using Microsoft.EntityFrameworkCore;
 using gen_fast_report.Services;
 using gen_fast_report.Models.Controllers;
+using gen_fast_report.Validators;
 
 namespace gen_fast_report.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FastReportControllers(StandardReportDbContext context, 
+    public class FastReportControllers(StandardReportDbContext context,
+        IFileValidationService fileValidationService,
         IUploadReportHandler uploadReportHandler) : ControllerBase
     {
+        private readonly IFileValidationService _fileValidationService = fileValidationService;
         private readonly StandardReportDbContext _context = context;
         private readonly IUploadReportHandler _uploadReportHandler = uploadReportHandler;
 
@@ -37,9 +40,15 @@ namespace gen_fast_report.Controllers
         [HttpPost]
         public async Task<ActionResult<StandardReport>> AddStandardReport(StandardReportRequest newStandardReportRequest)
         {
-
-            if (newStandardReportRequest is null)
+            if (newStandardReportRequest == null)
                 return BadRequest();
+
+            var file = newStandardReportRequest.File;
+            if (file == null)
+                return BadRequest("Nenhum arquivo foi enviado.");
+
+            if (!_fileValidationService.IsValidDocx(file))
+                return BadRequest("O arquivo enviado não é um .docx válido.");
 
             StandardReport newStandardReport = await _uploadReportHandler.InsertByteArray(newStandardReportRequest);
 
@@ -56,6 +65,13 @@ namespace gen_fast_report.Controllers
             var standardReport = await _context.StandardReports.FindAsync(id);
             if (standardReport is null)
                 return NotFound();
+
+            var file = newStandardReportRequest.File;
+            if (file == null)
+                return BadRequest("Nenhum arquivo foi enviado.");
+
+            if (!_fileValidationService.IsValidDocx(file))
+                return BadRequest("O arquivo enviado não é um .docx válido.");
 
             StandardReport newStandardReport = await _uploadReportHandler.InsertByteArray(newStandardReportRequest);
 
