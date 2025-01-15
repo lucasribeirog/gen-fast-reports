@@ -1,0 +1,28 @@
+<table class="table table-bordered table-hover table-striped">
+    <thead class="table-">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Area</th>
+        <th>Arquivo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let report of reports">
+        <td>{{ report.id }}</td>
+        <td>{{ report.name }}</td>
+        <td>{{ getAreaDescription(report.area) }}</td>
+        <td>
+            <button
+              *ngIf="report.file"
+              class="btn btn-link"
+              (click)="byteToFile(report.file, report.name ?? 'arquivo')"
+            >
+            <i class="bi bi-file-earmark-word"></i>
+            </button>
+            <span *ngIf="!report.file">Não Disponível</span>
+          </td>
+      </tr>
+    </tbody>
+  </table>
+  
