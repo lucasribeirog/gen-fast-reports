@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using gen_fast_report.Services;
 using gen_fast_report.Models.Controllers;
 using gen_fast_report.Validators;
+using gen_fast_report.Services.IServices;
 
 namespace gen_fast_report.Controllers
 {
@@ -14,16 +15,18 @@ namespace gen_fast_report.Controllers
     [ApiController]
     public class FastReportControllers(StandardReportDbContext context,
         IFileValidationService fileValidationService,
-        IUploadReportHandler uploadReportHandler) : ControllerBase
+        IUploadReportHandler uploadReportHandler,
+        IManageReportService manageReportService) : ControllerBase
     {
         private readonly IFileValidationService _fileValidationService = fileValidationService;
         private readonly StandardReportDbContext _context = context;
         private readonly IUploadReportHandler _uploadReportHandler = uploadReportHandler;
-
+        private readonly IManageReportService _manageReportService = manageReportService;
 
         [HttpGet]
         public async Task<ActionResult<List<StandardReport>>> GetStandardReports()
         {
+            _manageReportService.WriteNewReport("C:\\Users\\RYZEN 7\\Downloads\\050551492.docx", "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report");
             return Ok(await _context.StandardReports.ToListAsync());
         }
 
