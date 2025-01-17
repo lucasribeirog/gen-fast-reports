@@ -11,6 +11,6 @@ export class ReportService {
   constructor(private http: HttpClient) {  }
 
   getReports():Observable<Report[]>{
-    return this.http.get<Report[]>(this.apiUrl + '/FastReportControllers')
+    return this.http.get<Report[]>(this.apiUrl + '/StandardReport')
   }
 }
