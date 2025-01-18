@@ -1,8 +1,11 @@
-﻿using gen_fast_report.Models.Controllers;
+﻿using gen_fast_report.Attributes;
+using gen_fast_report.Models.Controllers;
 using gen_fast_report.Models.DTOs;
 using gen_fast_report.Services.IServices;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
+using System.Xml.Linq;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -20,13 +23,12 @@ namespace gen_fast_report.Services
                 IFormFile file = reportRequest.File!;
                 string destinyPathComplete = Path.Combine(_destinyPath, file!.FileName);
 
-                // Save file in the destiny path
                 await using (var fileStream = new FileStream(destinyPathComplete, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
 
-                BalisticaDTO balisticaReceive = GetDataFromInputReport(destinyPathComplete);
+                BalisticaDTO balisticaReceive = GetDataFromInputReport<BalisticaDTO>(destinyPathComplete);
                 DocX document = DocX.Load(_standardReportBalisticaPath);
 
                 if (document is not null && balisticaReceive is not null)
@@ -43,22 +45,18 @@ namespace gen_fast_report.Services
             }
 
         }
-        private DocX ReplaceValues(DocX document, BalisticaDTO balisticaReceive)
+
+        private DocX ReplaceValues<T>(DocX document, T data)
         {
-            var stringReplaces = new Dictionary<string, string>
+            var properties = typeof(T).GetProperties();
+            var stringReplaces = new Dictionary<string, string>();
+
+            foreach (var property in properties)
             {
-                { "#NL", balisticaReceive.Laudo! },
-                { "#NR", balisticaReceive.Requisicao! },
-                { "#REDS", balisticaReceive.Reds! },
-                { "#UR", balisticaReceive.UnidadeRequisitante! },
-                { "#AR", balisticaReceive.AutoridadeRequisitante! },
-                { "#PCNET", balisticaReceive.Pcnet! },
-                { "#RP", balisticaReceive.ResponsavelPericia! },
-                { "#FAV", balisticaReceive.Fav! },
-                { "#EXE", balisticaReceive.DescricaoExame! },
-                { "#DIE", balisticaReceive.DataInicio! },
-                { "#HIE", balisticaReceive.HoraInicio! },
-            };
+                var attributeName = $"#{property.Name.ToUpper()}"; // Exemplo de como criar a chave
+                var value = property.GetValue(data)?.ToString() ?? "";
+                stringReplaces[attributeName] = value;
+            }
 
             foreach (var replace in stringReplaces)
             {
@@ -72,30 +70,47 @@ namespace gen_fast_report.Services
             return document;
         }
 
-        private BalisticaDTO GetDataFromInputReport(string path)
+        private T GetDataFromInputReport<T>(string path) where T : new()
         {
             try
             {
                 DocX document = DocX.Load(path);
                 Console.WriteLine("Arquivo Lido com sucesso");
-                BalisticaDTO data = new BalisticaDTO();
-                data.IdPcnet = document.Bookmarks.First().Paragraph.Text;
-                data.Laudo = GetParagraphTextContaining(document, "Nº Laudo:");
-                data.Requisicao = GetParagraphTextContaining(document, "Nº Requisição Pericial:");
-                data.Reds = GetParagraphTextContaining(document, "Nº REDS:");
-                data.UnidadeRequisitante = GetParagraphTextContaining(document, "Unidade Requisitante:");
-                data.AutoridadeRequisitante = GetParagraphTextContaining(document, "Autoridade Requisitante:");
-                data.Pcnet = GetParagraphTextContaining(document, "Nº Procedimento Origem:");
-                data.ResponsavelPericia = GetParagraphTextContaining(document, "Responsável pela Perícia:");
-                data.Fav = GetParagraphTextContaining(document, "Nº da FAV:");
-                data.DescricaoExame = GetParagraphTextContaining(document, "Exame em:");
-                data.DataInicio = GetParagraphTextContaining(document, "Data do início do exame:");
-                data.HoraInicio = GetParagraphTextContaining(document, "Hora do início do exame:");
+
+                T data = new T();
+
+                var properties = typeof(T).GetProperties();
+
+                foreach (var property in properties)
+                {
+                    var textMappingAttribute = property.GetCustomAttribute<TextMappingAttribute>();
+                    if (textMappingAttribute != null && textMappingAttribute.SearchText != "Id Laudo")
+                    {
+                        string searchText = textMappingAttribute.SearchText;
+
+                        string value = GetParagraphTextContaining(document, searchText);
+
+                        property.SetValue(data, value);
+
+                        Console.WriteLine($"Propriedade {property.Name}: {value}");
+                    }
+                    else if (textMappingAttribute != null && textMappingAttribute.SearchText == "Id Laudo")
+                    {
+                        if (document.Bookmarks is not null)
+                        {
+                            string header = document.Bookmarks.First().Paragraph.Text;
+                            property.SetValue(data, header);
+                            Console.WriteLine($"Propriedade {property.Name}: {header}");
+                        }
+
+                    }
+                }
+
                 return data;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Não foi possível inicializar o seu documento", ex.ToString());
+                Console.WriteLine("Erro ao extrair dados do documento", ex.ToString());
                 throw;
             }
         }
