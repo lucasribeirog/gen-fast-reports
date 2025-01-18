@@ -7,6 +7,7 @@ namespace gen_fast_report.Models.Controllers
     {
         public IFormFile? File{ get; set; }
         public Gender Gender { get; set; }
-        public TipoBalistica Balistica { get; set; }
+        public Area Area { get; set; }
+        public TipoBalistica TipoBalistica { get; set; }
     }
 }

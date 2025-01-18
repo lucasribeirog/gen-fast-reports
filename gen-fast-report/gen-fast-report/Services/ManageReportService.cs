@@ -1,4 +1,5 @@
 ﻿using gen_fast_report.Attributes;
+using gen_fast_report.Enums;
 using gen_fast_report.Models.Controllers;
 using gen_fast_report.Models.DTOs;
 using gen_fast_report.Services.IServices;
@@ -22,18 +23,31 @@ namespace gen_fast_report.Services
             {
                 IFormFile file = reportRequest.File!;
                 string destinyPathComplete = Path.Combine(_destinyPath, file!.FileName);
-
+                string _standardReport = "";
                 await using (var fileStream = new FileStream(destinyPathComplete, FileMode.Create))
                 {
                     await file.CopyToAsync(fileStream);
                 }
 
-                BalisticaDTO balisticaReceive = GetDataFromInputReport<BalisticaDTO>(destinyPathComplete);
+                //Get header values from input document
+                BalisticaDTO balisticaReceive = GetDataHeaderFromInputReport<BalisticaDTO>(destinyPathComplete);
+
+                if (reportRequest.Area == Enums.Area.Balistica)
+                    _standardReport = _standardReportBalisticaPath;
+                else
+                {
+                    _standardReport = "A fazer !!!";
+                }
                 DocX document = DocX.Load(_standardReportBalisticaPath);
 
+                //Replaces document values
                 if (document is not null && balisticaReceive is not null)
                 {
-                    document = ReplaceValues(document, balisticaReceive);
+                    //Replace Header
+                    document = ReplaceValuesFromHeader(document, balisticaReceive);
+                    //Replace Main
+                    document = ReplaceMainValues(document, reportRequest);
+                    //Save
                     document.SaveAs(destinyPathComplete);
                 }
                 return "Documento feito com sucesso";
@@ -45,15 +59,52 @@ namespace gen_fast_report.Services
             }
 
         }
+        private DocX ReplaceMainValues(DocX document, ReportRequest reportRequest)
+        {
+            // Verificar se a área e tipo de balística são compatíveis
+            if (reportRequest.Area == Enums.Area.Balistica && reportRequest.TipoBalistica == Enums.Balistica.TipoBalistica.ArmaFogo)
+            {
+                // Determinar os valores de gênero para as substituições
+                var genderValues = GetGenderValues(reportRequest.Gender);
 
-        private DocX ReplaceValues<T>(DocX document, T data)
+                // Realizar as substituições no documento
+                document.ReplaceText(new StringReplaceTextOptions
+                {
+                    SearchValue = "#historico1",
+                    NewValue = genderValues.Item1
+                });
+
+                document.ReplaceText(new StringReplaceTextOptions
+                {
+                    SearchValue = "#historico2",
+                    NewValue = genderValues.Item2
+                });
+            }
+
+            // Retornar o documento modificado
+            return document;
+        }
+
+        private Tuple<string, string> GetGenderValues(Gender gender)
+        {
+            // Retornar os valores corretos de acordo com o gênero
+            if (gender == Gender.Male)
+            {
+                return new Tuple<string, string>("o", "signatário");
+            }
+            else
+            {
+                return new Tuple<string, string>("a", "signatária");
+            }
+        }
+        private DocX ReplaceValuesFromHeader<T>(DocX document, T data)
         {
             var properties = typeof(T).GetProperties();
             var stringReplaces = new Dictionary<string, string>();
 
             foreach (var property in properties)
             {
-                var attributeName = $"#{property.Name.ToUpper()}"; // Exemplo de como criar a chave
+                var attributeName = $"#{property.Name.ToUpper()}";
                 var value = property.GetValue(data)?.ToString() ?? "";
                 stringReplaces[attributeName] = value;
             }
@@ -70,7 +121,7 @@ namespace gen_fast_report.Services
             return document;
         }
 
-        private T GetDataFromInputReport<T>(string path) where T : new()
+        private T GetDataHeaderFromInputReport<T>(string path) where T : new()
         {
             try
             {
