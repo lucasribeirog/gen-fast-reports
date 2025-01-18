@@ -1,29 +1,77 @@
-﻿using gen_fast_report.Models.DTOs;
+﻿using gen_fast_report.Models.Controllers;
+using gen_fast_report.Models.DTOs;
 using gen_fast_report.Services.IServices;
 using System.Linq;
+using System.Reflection.Metadata;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gen_fast_report.Services
 {
     public class ManageReportService : IManageReportService
     {
-        public void WriteNewReport(string sourcePath, string destinyPath)
+        private readonly string _standardReportBalisticaPath = "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report\\Origem\\Balistica\\1.docx";
+        private readonly string _destinyPath = "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report\\Destino";
+        public async Task<string> WriteNewReport(ReportRequest reportRequest)
         {
-            BalisticaDTO balisticaReceive = GetDataFromInputReport(sourcePath);
-            DocX document = DocX.Load(destinyPath);
-            Console.WriteLine("Arquivo Lido com sucesso");
-            if (document is not null && balisticaReceive is not null) 
+            try
             {
-                document.ReplaceText(new StringReplaceTextOptions()
+                IFormFile file = reportRequest.File!;
+                string destinyPathComplete = Path.Combine(_destinyPath, file!.FileName);
+
+                // Save file in the destiny path
+                await using (var fileStream = new FileStream(destinyPathComplete, FileMode.Create))
                 {
-                    SearchValue = "Nº Laudo:",
-                    NewValue = balisticaReceive.Laudo
-                });
-                document.SaveAs(sourcePath);
+                    await file.CopyToAsync(fileStream);
+                }
+
+                BalisticaDTO balisticaReceive = GetDataFromInputReport(destinyPathComplete);
+                DocX document = DocX.Load(_standardReportBalisticaPath);
+
+                if (document is not null && balisticaReceive is not null)
+                {
+                    document = ReplaceValues(document, balisticaReceive);
+                    document.SaveAs(destinyPathComplete);
+                }
+                return "Documento feito com sucesso";
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine("Erro ao construir documento", ex.ToString());
+                throw;
             }
 
         }
+        private DocX ReplaceValues(DocX document, BalisticaDTO balisticaReceive)
+        {
+            var stringReplaces = new Dictionary<string, string>
+            {
+                { "#NL", balisticaReceive.Laudo! },
+                { "#NR", balisticaReceive.Requisicao! },
+                { "#REDS", balisticaReceive.Reds! },
+                { "#UR", balisticaReceive.UnidadeRequisitante! },
+                { "#AR", balisticaReceive.AutoridadeRequisitante! },
+                { "#PCNET", balisticaReceive.Pcnet! },
+                { "#RP", balisticaReceive.ResponsavelPericia! },
+                { "#FAV", balisticaReceive.Fav! },
+                { "#EXE", balisticaReceive.DescricaoExame! },
+                { "#DIE", balisticaReceive.DataInicio! },
+                { "#HIE", balisticaReceive.HoraInicio! },
+            };
+
+            foreach (var replace in stringReplaces)
+            {
+                document.ReplaceText(new StringReplaceTextOptions
+                {
+                    SearchValue = replace.Key,
+                    NewValue = replace.Value
+                });
+            }
+
+            return document;
+        }
+
         private BalisticaDTO GetDataFromInputReport(string path)
         {
             try
@@ -55,8 +103,13 @@ namespace gen_fast_report.Services
 
         private string GetParagraphTextContaining(DocX document, string searchText)
         {
-            return document.Paragraphs
-                           .FirstOrDefault(p => p.Text.Contains(searchText))?.Text ?? "";
+            var paragraph = document.Paragraphs.FirstOrDefault(p => p.Text.Contains(searchText));
+            if (paragraph is not null)
+            {
+                int startIndex = paragraph.Text.IndexOf(searchText) + searchText.Length;
+                return paragraph.Text.Substring(startIndex).Trim();
+            }
+            return "";
 
         }
     }

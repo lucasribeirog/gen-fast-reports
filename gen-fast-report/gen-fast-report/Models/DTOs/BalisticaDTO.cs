@@ -1,10 +1,9 @@
-﻿using gen_fast_report.Enums;
+﻿using gen_fast_report.Enums.Balistica;
 
 namespace gen_fast_report.Models.DTOs
 {
     public class BalisticaDTO
     {
-        public TipoBalistica Tipo;
         public string? IdPcnet { get; set; }
         public string? Laudo { get; set; }
         public string? Requisicao { get; set; }

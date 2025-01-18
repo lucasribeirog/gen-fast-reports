@@ -5,6 +5,6 @@ namespace gen_fast_report.Services.IServices
 {
     public interface IManageReportService
     {
-        void WriteNewReport(string sourcePath, string destinyPath);
+        Task<string> WriteNewReport(ReportRequest reportRequest);
     }
 }

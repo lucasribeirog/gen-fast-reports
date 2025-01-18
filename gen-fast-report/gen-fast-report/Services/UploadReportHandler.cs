@@ -19,7 +19,7 @@ namespace gen_fast_report.Services
 
         public  async Task<StandardReport> InsertByteArray(StandardReportRequest newStandardReportRequest)
         {
-            byte[] bytes = await GetByteArray(newStandardReportRequest.File);
+            byte[] bytes = await GetByteArray(newStandardReportRequest.File!);
 
             StandardReport newStandardReport = new StandardReport();
             newStandardReport.File = bytes;
