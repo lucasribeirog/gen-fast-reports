@@ -13,20 +13,17 @@ namespace gen_fast_report.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FastReportControllers(StandardReportDbContext context,
+    public class StandardReportController(StandardReportDbContext context,
         IFileValidationService fileValidationService,
-        IUploadReportHandler uploadReportHandler,
-        IManageReportService manageReportService) : ControllerBase
+        IUploadReportHandler uploadReportHandler) : ControllerBase
     {
         private readonly IFileValidationService _fileValidationService = fileValidationService;
         private readonly StandardReportDbContext _context = context;
         private readonly IUploadReportHandler _uploadReportHandler = uploadReportHandler;
-        private readonly IManageReportService _manageReportService = manageReportService;
 
         [HttpGet]
         public async Task<ActionResult<List<StandardReport>>> GetStandardReports()
         {
-            _manageReportService.WriteNewReport("C:\\Users\\RYZEN 7\\Downloads\\050551492.docx", "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report");
             return Ok(await _context.StandardReports.ToListAsync());
         }
 

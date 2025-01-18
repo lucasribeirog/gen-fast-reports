@@ -1,4 +1,4 @@
-﻿using gen_fast_report.Models;
+﻿using gen_fast_report.Models.DTOs;
 using gen_fast_report.Services.IServices;
 using System.Linq;
 using Xceed.Document.NET;
@@ -10,8 +10,8 @@ namespace gen_fast_report.Services
     {
         public void WriteNewReport(string sourcePath, string destinyPath)
         {
-            Balistica balisticaReceive = GetDataFromInputReport(sourcePath);
-            DocX document = DocX.Load(destinyPath + "/balistica.docx");
+            BalisticaDTO balisticaReceive = GetDataFromInputReport(sourcePath);
+            DocX document = DocX.Load(destinyPath);
             Console.WriteLine("Arquivo Lido com sucesso");
             if (document is not null && balisticaReceive is not null) 
             {
@@ -20,17 +20,17 @@ namespace gen_fast_report.Services
                     SearchValue = "Nº Laudo:",
                     NewValue = balisticaReceive.Laudo
                 });
-                document.SaveAs(destinyPath + "/documento_gerado.docx");
+                document.SaveAs(sourcePath);
             }
 
         }
-        private Balistica GetDataFromInputReport(string path)
+        private BalisticaDTO GetDataFromInputReport(string path)
         {
             try
             {
                 DocX document = DocX.Load(path);
                 Console.WriteLine("Arquivo Lido com sucesso");
-                Balistica data = new Balistica();
+                BalisticaDTO data = new BalisticaDTO();
                 data.IdPcnet = document.Bookmarks.First().Paragraph.Text;
                 data.Laudo = GetParagraphTextContaining(document, "Nº Laudo:");
                 data.Requisicao = GetParagraphTextContaining(document, "Nº Requisição Pericial:");
