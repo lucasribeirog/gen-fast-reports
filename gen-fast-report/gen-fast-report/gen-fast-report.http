@@ -1,0 +1,6 @@
+@gen_fast_report_HostAddress = http://localhost:5244
+
+GET {{gen_fast_report_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
