@@ -1,91 +1,41 @@
 ﻿using gen_fast_report.Attributes;
 using gen_fast_report.Enums;
-using gen_fast_report.Models.Controllers;
-using gen_fast_report.Models.DTOs;
 using gen_fast_report.Services.IServices;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Xml.Linq;
 using Xceed.Document.NET;
 using Xceed.Words.NET;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace gen_fast_report.Services
 {
     public class ManageReportService : IManageReportService
-    {
-        private readonly string _standardReportBalisticaPath = "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report\\Origem\\Balistica\\1.docx";
-        private readonly string _destinyPath = "C:\\Users\\RYZEN 7\\OneDrive\\Documentos\\DOCUMENTOS LUCAS\\gen-fast-report\\Destino";
-        public async Task<string> WriteNewReport(ReportRequest reportRequest)
-        {
-            try
-            {
-                IFormFile file = reportRequest.File!;
-                string destinyPathComplete = Path.Combine(_destinyPath, file!.FileName);
-                string _standardReport = "";
-                await using (var fileStream = new FileStream(destinyPathComplete, FileMode.Create))
-                {
-                    await file.CopyToAsync(fileStream);
-                }
+    {    
+        //public DocX ReplaceMainValues(DocX document, ReportRequest reportRequest)
+        //{
+        //    // Verificar se a área e tipo de balística são compatíveis
+        //    if (reportRequest.Area == Enums.Area.Balistica && reportRequest.TipoBalistica == Enums.Balistica.TipoBalistica.ArmaFogo)
+        //    {
+        //        // Determinar os valores de gênero para as substituições
+        //        var genderValues = GetGenderValues(reportRequest.Gender);
 
-                //Get header values from input document
-                BalisticaDTO balisticaReceive = GetDataHeaderFromInputReport<BalisticaDTO>(destinyPathComplete);
+        //        // Realizar as substituições no documento
+        //        document.ReplaceText(new StringReplaceTextOptions
+        //        {
+        //            SearchValue = "#historico1",
+        //            NewValue = genderValues.Item1
+        //        });
 
-                if (reportRequest.Area == Enums.Area.Balistica)
-                    _standardReport = _standardReportBalisticaPath;
-                else
-                {
-                    _standardReport = "A fazer !!!";
-                }
-                DocX document = DocX.Load(_standardReportBalisticaPath);
+        //        document.ReplaceText(new StringReplaceTextOptions
+        //        {
+        //            SearchValue = "#historico2",
+        //            NewValue = genderValues.Item2
+        //        });
+        //    }
 
-                //Replaces document values
-                if (document is not null && balisticaReceive is not null)
-                {
-                    //Replace Header
-                    document = ReplaceValuesFromHeader(document, balisticaReceive);
-                    //Replace Main
-                    document = ReplaceMainValues(document, reportRequest);
-                    //Save
-                    document.SaveAs(destinyPathComplete);
-                }
-                return "Documento feito com sucesso";
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine("Erro ao construir documento", ex.ToString());
-                throw;
-            }
+        //    // Retornar o documento modificado
+        //    return document;
+        //}
 
-        }
-        private DocX ReplaceMainValues(DocX document, ReportRequest reportRequest)
-        {
-            // Verificar se a área e tipo de balística são compatíveis
-            if (reportRequest.Area == Enums.Area.Balistica && reportRequest.TipoBalistica == Enums.Balistica.TipoBalistica.ArmaFogo)
-            {
-                // Determinar os valores de gênero para as substituições
-                var genderValues = GetGenderValues(reportRequest.Gender);
-
-                // Realizar as substituições no documento
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#historico1",
-                    NewValue = genderValues.Item1
-                });
-
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#historico2",
-                    NewValue = genderValues.Item2
-                });
-            }
-
-            // Retornar o documento modificado
-            return document;
-        }
-
-        private Tuple<string, string> GetGenderValues(Gender gender)
+        public Tuple<string, string> GetGenderValues(Gender gender)
         {
             // Retornar os valores corretos de acordo com o gênero
             if (gender == Gender.Male)
@@ -97,7 +47,7 @@ namespace gen_fast_report.Services
                 return new Tuple<string, string>("a", "signatária");
             }
         }
-        private DocX ReplaceValuesFromHeader<T>(DocX document, T data)
+        public DocX ReplaceValuesFromHeader<T>(DocX document, T data)
         {
             var properties = typeof(T).GetProperties();
             var stringReplaces = new Dictionary<string, string>();
@@ -121,7 +71,7 @@ namespace gen_fast_report.Services
             return document;
         }
 
-        private T GetDataHeaderFromInputReport<T>(string path) where T : new()
+        public T GetDataHeaderFromInputReport<T>(string path) where T : new()
         {
             try
             {
@@ -167,7 +117,7 @@ namespace gen_fast_report.Services
         }
 
 
-        private string GetParagraphTextContaining(DocX document, string searchText)
+        public string GetParagraphTextContaining(DocX document, string searchText)
         {
             var paragraph = document.Paragraphs.FirstOrDefault(p => p.Text.Contains(searchText));
             if (paragraph is not null)

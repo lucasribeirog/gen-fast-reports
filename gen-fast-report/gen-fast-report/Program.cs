@@ -1,5 +1,6 @@
 using gen_fast_report.Data;
 using gen_fast_report.Services;
+using gen_fast_report.Services.Balistica;
 using gen_fast_report.Services.IServices;
 using gen_fast_report.Validators;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ sqlOptions => sqlOptions.EnableRetryOnFailure(
 builder.Services.AddScoped<IUploadReportHandler, UploadReportHandler>();
 builder.Services.AddScoped<IFileValidationService, FileValidationService>();
 builder.Services.AddScoped<IManageReportService, ManageReportService>();
+builder.Services.AddScoped<IManageBalisticaReportService, ManageBalisticaReportService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

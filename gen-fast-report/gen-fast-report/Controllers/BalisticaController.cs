@@ -1,35 +1,32 @@
 ﻿using gen_fast_report.Models.Controllers;
-using gen_fast_report.Models;
 using gen_fast_report.Services.IServices;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.IO;
 using gen_fast_report.Validators;
+using Microsoft.AspNetCore.Mvc;
 
 namespace gen_fast_report.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ManageReportController(IManageReportService manageReportService,
-        IFileValidationService fileValidationService) : ControllerBase
+    public class BalisticaController(IFileValidationService fileValidationService,
+        IManageBalisticaReportService manageBalisticaReportService) : ControllerBase
     {
-        private readonly IManageReportService _manageReportService = manageReportService;
         private readonly IFileValidationService _fileValidationService = fileValidationService;
-        
+        private readonly IManageBalisticaReportService _manageBalisticaReportService = manageBalisticaReportService;
+
         [HttpPost]
-        public async Task<IActionResult> GenerateReport(ReportRequest reportRequest)
+        public async Task<IActionResult> GenerateReport(BalisticaRequest balisticaRequest)
         {
-            if (reportRequest == null)
+            if (balisticaRequest == null)
                 return BadRequest();
 
-            var file = reportRequest.File;
+            var file = balisticaRequest.File;
             if (file == null)
                 return BadRequest("Nenhum arquivo foi enviado.");
 
             if (!_fileValidationService.IsValidDocx(file))
                 return BadRequest("O arquivo enviado não é um .docx válido.");
 
-            await _manageReportService.WriteNewReport(reportRequest);
+            await _manageBalisticaReportService.WriteNewReport(balisticaRequest);
 
             return NoContent();
         }
