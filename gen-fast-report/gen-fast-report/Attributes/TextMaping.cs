@@ -1,4 +1,6 @@
-﻿namespace gen_fast_report.Attributes
+﻿using System.Runtime.Serialization;
+
+namespace gen_fast_report.Attributes
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class TextMappingAttribute : Attribute
