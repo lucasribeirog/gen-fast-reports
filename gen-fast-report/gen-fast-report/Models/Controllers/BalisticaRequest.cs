@@ -11,6 +11,7 @@ namespace gen_fast_report.Models.Controllers
         public required Gender Gender { get; set; }
 
         public required TipoBalistica BalisticType { get; set; }
+        public required STRCS STRCS { get; set; }
 
         public string? Caliber { get; set; }
 
@@ -40,6 +41,8 @@ namespace gen_fast_report.Models.Controllers
         public string? PipeMeasurement { get; set; }
 
         public string? TotalMeasure { get;set;}
+
+        public ResultadoExameBalistica BallisticsExamResult { get; set; }
 
     }
 }

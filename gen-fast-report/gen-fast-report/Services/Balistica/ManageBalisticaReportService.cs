@@ -1,4 +1,5 @@
 ﻿using gen_fast_report.Attributes;
+using gen_fast_report.Attributes.Balistica;
 using gen_fast_report.Enums;
 using gen_fast_report.Enums.Balistica;
 using gen_fast_report.Models.Controllers;
@@ -55,7 +56,7 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
                 document = _manageReportService.ReplaceValuesFromHeader(document, balisticaReceive);
 
                 // Replace Main Values
-                document = ReplaceMainValues(document, balisticaRequest);
+                document = ReplaceMainValues(document, balisticaRequest, balisticaReceive);
 
                 // Save
                 document.SaveAs(destinyPathComplete);
@@ -70,28 +71,18 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
         }
     }
 
-    private DocX ReplaceMainValues(DocX document, BalisticaRequest balisticaRequest)
+    private DocX ReplaceMainValues(DocX document, BalisticaRequest balisticaRequest, BalisticaDTO balisticaReceiveDTO)
     {
         document = ReplaceGenderSpecificValues(document, balisticaRequest.Gender);
         document = ReplaceBalisticaTypeValues(document, balisticaRequest);
+        document = ReplaceExamResults(document, balisticaRequest);
+        document = ReplaceForwardingMaterial(document, balisticaRequest, balisticaReceiveDTO);
         return document;
     }
 
     private DocX ReplaceGenderSpecificValues(DocX document, Gender gender)
     {
-        string historicoText = gender switch
-        {
-            Gender.Male => "o Perito Criminal, signatário",
-            Gender.Female => "a Perita Criminal, signatária",
-            _ => throw new ArgumentException("Invalid gender")
-        };
-
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#historico",
-            NewValue = historicoText
-        });
-
+        ReplaceGenderPlaceholder(document, gender, "#historico", "o Perito Criminal, signatário", "a Perita Criminal, signatária");
         return document;
     }
 
@@ -135,150 +126,94 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
 
     private DocX ReplaceInitialConsiderations(DocX document, BalisticaRequest balisticaRequest)
     {
-        switch (balisticaRequest.Gender) 
-        {
-            case Gender.Male:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#CONSID1",
-                    NewValue = "o perito"
-                });
-                break;
-            case Gender.Female:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#CONSID1",
-                    NewValue = "a perito"
-                });
-                break;
-        }
-
-        switch (balisticaRequest.Amount) 
-        {
-            case 1:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#CONSID2",
-                    NewValue = "na peça acima discriminada"
-                });
-                break;
-            default:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#CONSID2",
-                    NewValue = "nas peça acima discriminada"
-                });
-                break;
-        }
+        ReplaceGenderPlaceholder(document, balisticaRequest.Gender, ReportPlaceholdersBalistica.Consideracao1, "o perito", "a perita");
+        ReplaceAmountConsideration(document, balisticaRequest.Amount);
         return document;
+    }
+
+    private void ReplaceAmountConsideration(DocX document, int amount)
+    {
+        string amountText = amount == 1
+            ? "na peça acima discriminada"
+            : "nas peças acima discriminadas";
+
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Consideracao2, amountText);
     }
 
     private DocX ReplaceMaterialDescriptionWeapon(DocX document, BalisticaRequest balisticaRequest)
     {
-        //Envelope Number
-        switch (balisticaRequest.EnvelopeNumber)
-        {
-            case null:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#INVOLUCRO",
-                    NewValue = ":"
-                });
-                break;
+        ReplaceEnvelopeNumber(document, balisticaRequest.EnvelopeNumber, ReportPlaceholdersBalistica.Involucro, ":");
+        ReplaceWeaponDetails(document, balisticaRequest);
+        ReplaceAdditionalDetails(document, balisticaRequest);
+        return document;
+    }
 
-            default:
-                document.ReplaceText(new StringReplaceTextOptions
-                {
-                    SearchValue = "#INVOLUCRO",
-                    NewValue = $" acondicionado no interior do invólucro de segurança lacrado nº {balisticaRequest.EnvelopeNumber}:"
-                });
+    private DocX ReplaceExamResults(DocX document, BalisticaRequest balisticaRequest)
+    {
+        switch (balisticaRequest.BallisticsExamResult)
+        {
+            case ResultadoExameBalistica.Eficiente:
+                Utils.RemoveText(document, "#RESULTADO1");
+                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO2", "#RESULTADO3"]);
+                break;
+            case ResultadoExameBalistica.Ineficiente:
+                Utils.RemoveText(document, "#RESULTADO2");
+                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO1", "#RESULTADO3"]);
+                break;
+            case ResultadoExameBalistica.Prejudicado:
+                Utils.RemoveText(document, "#RESULTADO3");
+                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO1", "#RESULTADO2"]);
                 break;
         }
-        //Weapon Ttype
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#TIPO",
-            NewValue = EnumUtils.GetEnumMemberValue(balisticaRequest.WeaponType)
-        });
-
-        //Caliber
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#CALIBRE",
-            NewValue = balisticaRequest.Caliber
-        });
-
-        //Brand
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#MARCA",
-            NewValue = balisticaRequest.Brand
-        });
-
-        //Model
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#MODELO",
-            NewValue = balisticaRequest.Model
-        });
-
-        //Serial Number
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#NUMEROSERIE",
-            NewValue = balisticaRequest.SerialNumber
-        });
-
-        //Finish Weapon
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#ACABAMENTO",
-            NewValue = EnumUtils.GetEnumMemberValue(balisticaRequest.FinishWeapon)
-        });
-
-        //Weapon Feed
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#ALIMENTACAO",
-            NewValue = EnumUtils.GetEnumMemberValue(balisticaRequest.WeaponFeed)
-        });
-
-        //Weapon Charger
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#CARREGADOR",
-            NewValue = EnumUtils.GetEnumMemberValue(balisticaRequest.WeaponCharger)
-        });
-
-        //Charger Capacity
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#CAPACIDADE",
-            NewValue = balisticaRequest.CapacityCharger.ToString()
-        });
-
-        //Soleira
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#SOLEIRA",
-            NewValue = EnumUtils.GetEnumMemberValue(balisticaRequest.SoleiraArma)
-        });
-
-        //Pipe Measurement
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#MEDIDACANO",
-            NewValue = balisticaRequest.PipeMeasurement
-        });
-
-        //Total Measure
-        document.ReplaceText(new StringReplaceTextOptions
-        {
-            SearchValue = "#MEDIDATOTAL",
-            NewValue = balisticaRequest.TotalMeasure
-        });
-
         return document;
+    }
+    
+    private DocX ReplaceForwardingMaterial(DocX document, BalisticaRequest balisticaRequest, BalisticaDTO balisticaReceiveDTO)
+    {
+        Utils.ReplaceText(document, "#ENCAMINHAMENTO1", balisticaReceiveDTO.Fav);
+        ReplaceEnvelopeNumber(document, balisticaRequest.EnvelopeNumber, "#ENCAMINHAMENTO2");
+        Utils.ReplaceText(document, "#ENCAMINHAMENTO3", Utils.GetEnumMemberValue(balisticaRequest.STRCS));
+        return document;
+    }
+    private void ReplaceEnvelopeNumber(DocX document, int? envelopeNumber, string placeHolder, string afterPlaceHolder = "")
+    {
+        string envelopeText = envelopeNumber is null
+            ? afterPlaceHolder
+            : $" acondicionado no interior do invólucro de segurança lacrado nº {envelopeNumber}" + afterPlaceHolder;
+
+        Utils.ReplaceText(document, placeHolder, envelopeText);
+    }
+
+    private void ReplaceWeaponDetails(DocX document, BalisticaRequest balisticaRequest)
+    {
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Tipo, Utils.GetEnumMemberValue(balisticaRequest.WeaponType));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Calibre, balisticaRequest.Caliber ?? "N/A");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Marca, balisticaRequest.Brand ?? "N/A");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Modelo, balisticaRequest.Model ?? "N/A");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.NumeroSerie, balisticaRequest.SerialNumber ?? "N/A");
+    }
+
+    private void ReplaceAdditionalDetails(DocX document, BalisticaRequest balisticaRequest)
+    {
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Acabamento, Utils.GetEnumMemberValue(balisticaRequest.FinishWeapon));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Alimentacao, Utils.GetEnumMemberValue(balisticaRequest.WeaponFeed));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Carregador, Utils.GetEnumMemberValue(balisticaRequest.WeaponCharger));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Capacidade, balisticaRequest.CapacityCharger.ToString());
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Soleira, Utils.GetEnumMemberValue(balisticaRequest.SoleiraArma));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.MedidaCano, balisticaRequest.PipeMeasurement ?? "N/A");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.MedidaTotal, balisticaRequest.TotalMeasure ?? "N/A");
+    }
+
+    private void ReplaceGenderPlaceholder(DocX document, Gender gender, string placeholder, string maleText, string femaleText)
+    {
+        string genderText = gender switch
+        {
+            Gender.Male => maleText,
+            Gender.Female => femaleText,
+            _ => throw new ArgumentException("Gênero inválido")
+        };
+
+        Utils.ReplaceText(document, placeholder, genderText);
     }
 
 }
