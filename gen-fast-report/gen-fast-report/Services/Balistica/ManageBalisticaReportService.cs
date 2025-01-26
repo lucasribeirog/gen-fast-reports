@@ -153,16 +153,22 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
         switch (balisticaRequest.BallisticsExamResult)
         {
             case ResultadoExameBalistica.Eficiente:
-                Utils.RemoveText(document, "#RESULTADO1");
-                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO2", "#RESULTADO3"]);
+                Utils.RemoveText(document, ReportPlaceholdersBalistica.Resultado1);
+                Utils.RemoveParagraphWithInitiateText(document, 
+                    [ReportPlaceholdersBalistica.Resultado2, 
+                    ReportPlaceholdersBalistica.Resultado3]);
                 break;
             case ResultadoExameBalistica.Ineficiente:
-                Utils.RemoveText(document, "#RESULTADO2");
-                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO1", "#RESULTADO3"]);
+                Utils.RemoveText(document, ReportPlaceholdersBalistica.Resultado2);
+                Utils.RemoveParagraphWithInitiateText(document, 
+                    [ReportPlaceholdersBalistica.Resultado1,
+                    ReportPlaceholdersBalistica.Resultado3]);
                 break;
             case ResultadoExameBalistica.Prejudicado:
-                Utils.RemoveText(document, "#RESULTADO3");
-                Utils.RemoveParagraphWithInitiateText(document, ["#RESULTADO1", "#RESULTADO2"]);
+                Utils.RemoveText(document, ReportPlaceholdersBalistica.Resultado3);
+                Utils.RemoveParagraphWithInitiateText(document, 
+                    [ReportPlaceholdersBalistica.Resultado1,
+                    ReportPlaceholdersBalistica.Resultado2]);
                 break;
         }
         return document;
@@ -170,9 +176,9 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
     
     private DocX ReplaceForwardingMaterial(DocX document, BalisticaRequest balisticaRequest, BalisticaDTO balisticaReceiveDTO)
     {
-        Utils.ReplaceText(document, "#ENCAMINHAMENTO1", balisticaReceiveDTO.Fav);
-        ReplaceEnvelopeNumber(document, balisticaRequest.EnvelopeNumber, "#ENCAMINHAMENTO2");
-        Utils.ReplaceText(document, "#ENCAMINHAMENTO3", Utils.GetEnumMemberValue(balisticaRequest.STRCS));
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Encaminhamento1, balisticaReceiveDTO.Fav);
+        ReplaceEnvelopeNumber(document, balisticaRequest.EnvelopeNumber, ReportPlaceholdersBalistica.Encaminhamento2);
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Encaminhamento3, Utils.GetEnumMemberValue(balisticaRequest.STRCS));
         return document;
     }
     private void ReplaceEnvelopeNumber(DocX document, int? envelopeNumber, string placeHolder, string afterPlaceHolder = "")
