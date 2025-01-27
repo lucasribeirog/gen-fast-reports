@@ -20,11 +20,16 @@ namespace gen_fast_report.Controllers
                 return BadRequest();
 
             var file = balisticaRequest.File;
+            var imageFile = balisticaRequest?.Image;
+
             if (file == null)
                 return BadRequest("Nenhum arquivo foi enviado.");
 
             if (!_fileValidationService.IsValidDocx(file))
                 return BadRequest("O arquivo enviado não é um .docx válido.");
+
+            if(imageFile != null && !_fileValidationService.IsValidImage(imageFile))
+                return BadRequest("O arquivo enviado não são do tipo JPEG e PNG");
 
             await _manageBalisticaReportService.WriteNewReport(balisticaRequest);
 

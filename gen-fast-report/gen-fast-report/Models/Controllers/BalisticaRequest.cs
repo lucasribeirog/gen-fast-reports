@@ -12,6 +12,7 @@ namespace gen_fast_report.Models.Controllers
 
         public required TipoBalistica BalisticType { get; set; }
         public required STRCS STRCS { get; set; }
+        public IFormFile? Image { get; set; }
 
         public string? Caliber { get; set; }
 

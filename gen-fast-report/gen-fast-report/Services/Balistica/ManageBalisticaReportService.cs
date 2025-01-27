@@ -56,7 +56,7 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
                 document = _manageReportService.ReplaceValuesFromHeader(document, balisticaReceive);
 
                 // Replace Main Values
-                document = ReplaceMainValues(document, balisticaRequest, balisticaReceive);
+                document = await ReplaceMainValues(document, balisticaRequest, balisticaReceive);
 
                 // Save
                 document.SaveAs(destinyPathComplete);
@@ -71,12 +71,13 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
         }
     }
 
-    private DocX ReplaceMainValues(DocX document, BalisticaRequest balisticaRequest, BalisticaDTO balisticaReceiveDTO)
+    private async Task<DocX> ReplaceMainValues(DocX document, BalisticaRequest balisticaRequest, BalisticaDTO balisticaReceiveDTO)
     {
         document = ReplaceGenderSpecificValues(document, balisticaRequest.Gender);
         document = ReplaceBalisticaTypeValues(document, balisticaRequest);
         document = ReplaceExamResults(document, balisticaRequest);
         document = ReplaceForwardingMaterial(document, balisticaRequest, balisticaReceiveDTO);
+        document = await InsertImageinDocument(document, balisticaRequest);
         return document;
     }
 
@@ -181,6 +182,54 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Encaminhamento3, Utils.GetEnumMemberValue(balisticaRequest.STRCS));
         return document;
     }
+
+    private async Task<DocX> InsertImageinDocument(DocX document, BalisticaRequest balisticaRequest)
+    {
+        // Encontrar o parágrafo que contém o marcador "#IMAGE"
+        var paragraph = document.Paragraphs.FirstOrDefault(p => p.Text.Contains("#IMAGE"));
+
+        if (balisticaRequest.Image != null && paragraph != null)
+        {
+            await using (var imageStream = balisticaRequest.Image.OpenReadStream())
+            {
+                var image = document.AddImage(imageStream);
+                
+                var picture = image.CreatePicture();
+                if(picture.Width != 453)
+                {
+                    picture.Width = 453;
+                    var res = picture.Width / picture.Height;
+                    var newHeigth = res * picture.Height;
+                    picture.Height = newHeigth;
+                }
+
+                paragraph.AppendPicture(picture);
+            }
+
+            var captionParagraph = document.InsertParagraph();
+            captionParagraph
+                .Append("Figura 1 - Material Examinado.")
+                .Font("Times New Roman") 
+                .FontSize(12)
+                .Alignment = Alignment.center; 
+
+            paragraph.InsertParagraphAfterSelf(captionParagraph);
+
+            Utils.ReplaceText(document, "#IMAGE", string.Empty);
+
+
+        }
+        else
+        {
+            _logger.LogWarning("A imagem não foi fornecida ou o parágrafo de imagem não foi encontrado.");
+        }
+
+        return document;
+    }
+
+
+
+
     private void ReplaceEnvelopeNumber(DocX document, int? envelopeNumber, string placeHolder, string afterPlaceHolder = "")
     {
         string envelopeText = envelopeNumber is null
