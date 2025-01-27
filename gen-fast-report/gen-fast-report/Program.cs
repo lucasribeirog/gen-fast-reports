@@ -21,9 +21,18 @@ sqlOptions => sqlOptions.EnableRetryOnFailure(
     errorNumbersToAdd: null)
     )
 );
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
 builder.Services.AddScoped<IUploadReportHandler, UploadReportHandler>();
 builder.Services.AddScoped<IFileValidationService, FileValidationService>();
 builder.Services.AddScoped<IManageReportService, ManageReportService>();
+builder.Services.AddScoped<IManageBalisticaReportService, ManageBalisticaReportService>();
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+    config.AddDebug();
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

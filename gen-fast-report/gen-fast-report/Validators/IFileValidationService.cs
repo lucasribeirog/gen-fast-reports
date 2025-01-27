@@ -3,5 +3,6 @@
     public interface IFileValidationService
     {
         bool IsValidDocx(IFormFile file);
+        bool IsValidImage(IFormFile file);
     }
 }
