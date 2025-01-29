@@ -1,0 +1,167 @@
+<!-- balistica-form.component.html -->
+<div class="container mt-4">
+    <!-- Progress Steps -->
+    <div class="steps mb-5">
+      <div class="step" [class.active]="currentStep === 1">Passo 1</div>
+      <div class="step" [class.active]="currentStep === 2">Passo 2</div>
+      <div class="step" [class.active]="currentStep === 3">Passo 3</div>
+    </div>
+  
+    <!-- Step 1 -->
+    <form *ngIf="currentStep === 1" [formGroup]="passo1">
+      <h3>Passo 1: Informações Básicas</h3>
+      <div class="row">
+        <div class="col-3 mb-3">
+          <label class="form-label">Arquivo Docx (PCNET)</label>
+          <input type="file" class="form-control" id="file" (change)="onFileSelected('File', $event)" />
+        </div>
+        <div class="col-3 mb-3">
+          <label class="form-label">Número Envelope Lacrado</label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Número envelope" aria-label="input_envelope_number" aria-describedby="input_envelope_number" formControlName="Envelope">
+          </div>
+        </div>
+        <div class="col-3 mb-3">
+          <label class="form-label">Calibre da Arma</label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Calibre" aria-label="Caliber" aria-describedby="input_caliber" formControlName="Caliber">
+          </div>
+        </div>
+        <div class="col-3 mb-3">
+          <label class="form-label">Marca da Arma</label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Marca" aria-label="input_brand" aria-describedby="input_brand" formControlName="Marca">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-3 mb-3">
+          <!-- Tamanho do cano da arma -->
+            <label class="form-label">Tamanho do cano da arma</label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Tamanho do cano"
+                    formControlName="PipeMeasurement">
+              
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                    data-bs-toggle="dropdown" aria-expanded="false">
+            {{ selectedUnits?.['PipeMeasurement'] || 'Unidade' }}
+            </button>           
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button type="button" class="dropdown-item" (click)="setUnit('PipeMeasurement', 'mm')">mm</button></li>
+              <li><button type="button" class="dropdown-item" (click)="setUnit('PipeMeasurement', 'cm')">cm</button></li>
+              <li><button type="button" class="dropdown-item" (click)="setUnit('PipeMeasurement', 'm')">m</button></li>
+            </ul>                        
+            </div>
+        </div>
+        <div class="col-3 mb-3">
+          <label class="form-label">Medida total</label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Medida total"
+                    formControlName="TotalMeasure">              
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+            data-bs-toggle="dropdown" aria-expanded="false">
+            {{ selectedUnits?.['TotalMeasure'] || 'Unidade' }}            </button>           
+
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button type="button" class="dropdown-item" (click)="setUnit('TotalMeasure', 'mm')">mm</button></li>
+              <li><button type="button" class="dropdown-item" (click)="setUnit('TotalMeasure', 'cm')">cm</button></li>
+              <li><button type="button" class="dropdown-item" (click)="setUnit('TotalMeasure', 'm')">m</button></li>
+            </ul>             
+            </div>
+        </div>
+      </div>
+    </form>
+  
+    <!-- Step 2 -->
+    <form *ngIf="currentStep === 2" [formGroup]="passo2">
+      <h3>Passo 2: Especificações e medidas</h3>
+
+      <div class="row">
+        <div class="col-4 mb-3">
+          <label class="form-label">Imagem da arma</label>
+          <input type="file" class="form-control" (change)="onFileSelected('File', $event)">
+        </div>
+        <div class="col-4 mb-3">
+          <label class="form-label">Model da arma</label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Modelo da arma" aria-label="input_wepon_model" aria-describedby="input_wepon_model" formControlName="Model">
+          </div>
+        </div>
+        <div class="col-4 mb-3">
+          <label class="form-label">Número serial</label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Número serial" aria-label="input_serial_number" aria-describedby="input_serial_number" formControlName="SerialNumber">
+          </div>
+        </div>        
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">Tipo de Arma</label>
+          <select class="form-select" formControlName="WeaponType">
+            <option *ngFor="let tipo of tipoArmaOptions" [value]="tipo.value">{{tipo.label}}</option>
+          </select>
+        </div>
+        
+        <div class="col-md-4">
+          <label class="form-label">Acabamento</label>
+          <select class="form-select" formControlName="FinishWeapon">
+            <option *ngFor="let acabamento of acabamentoOptions" [value]="acabamento.value">{{acabamento.label}}</option>
+          </select>
+        </div>
+  
+        <div class="col-md-4">
+          <label class="form-label">Soleira da arma</label>
+          <select class="form-select" formControlName="SoleiraArma">
+            <option *ngFor="let soleira of soleiraOptions" [value]="soleira.value">{{soleira.label}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4">
+          <label class="form-label">Alimentador da arma</label>
+          <select class="form-select" formControlName="WeaponFeed">
+            <option *ngFor="let alimentacao of alimentacaoOptions" [value]="alimentacao.value">{{alimentacao.label}}</option>
+          </select>
+        </div>
+        
+        <div class="col-md-4">
+          <label class="form-label">Carregador da arma</label>
+          <select class="form-select" formControlName="WeaponCharger">
+            <option *ngFor="let carregador of carregadorOptions" [value]="carregador.value">{{carregador.label}}</option>
+          </select>
+        </div>
+  
+        <div class="col-md-4">
+          <label class="form-label">Capacidade do carregador</label>
+          <input type="number" class="form-control" formControlName="CapacityCharger">
+        </div>
+      </div>
+    </form>
+  
+    <!-- Step 3 -->
+    <form *ngIf="currentStep === 3" [formGroup]="passo3">
+      <h3>Passo 3: Detalhes da Arma</h3>  
+      <!-- Botões de Aprovar, Rejeitar e Prejudicado -->
+      <div class="row mt-4">
+        <div class="col-4">
+          <button type="button" class="btn btn-success w-100" (click)="onApprove()">Aprovar</button>
+        </div>
+        <div class="col-4">
+          <button type="button" class="btn btn-danger w-100" (click)="onReject()">Rejeitar</button>
+        </div>
+        <div class="col-4">
+          <button type="button" class="btn btn-warning w-100" (click)="onDamaged()">Prejudicado</button>
+        </div>
+      </div>
+    </form>
+  
+    <!-- Navigation Buttons -->
+    <div class="mt-4">
+      <button *ngIf="currentStep > 1" class="btn btn-secondary me-2" (click)="prevStep()">Voltar</button>
+      <button *ngIf="currentStep < 3" class="btn btn-primary" (click)="nextStep()" [disabled]="!isCurrentStepValid()">Próximo</button>
+      <button *ngIf="currentStep === 3" class="btn btn-success" (click)="onSubmit()" [disabled]="!form.valid">Enviar</button>
+    </div>
+  </div>

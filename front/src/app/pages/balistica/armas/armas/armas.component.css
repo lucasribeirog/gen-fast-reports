@@ -1,0 +1,26 @@
+/* balistica-form.component.css */
+.steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+  
+  .step {
+    flex: 1;
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 3px solid #ddd;
+    color: #666;
+  }
+  
+  .step.active {
+    border-color: #0d6efd;
+    color: #0d6efd;
+    font-weight: bold;
+  }
+  
+  .form-label.required:after {
+    content: "*";
+    color: red;
+    margin-left: 3px;
+  }

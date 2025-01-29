@@ -1,0 +1,122 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.form-container {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    max-width: 90%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.form-container h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #495057;
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #343a40;
+}
+
+.form-group input,
+.form-group select,
+.form-group button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 12px;
+    font-size: 1rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #007bff;
+    outline: none;
+    background-color: #ffffff;
+}
+
+.form-group button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    width: auto;
+    padding: 10px 20px;
+}
+
+.form-group button:hover {
+    background-color: #0056b3;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1 1 calc(33.33% - 15px);
+    min-width: 150px;
+}
+
+.file-upload {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-upload label {
+    flex: 1;
+}
+
+.form-container .section-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #495057;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .form-row .form-group {
+        flex: 1 1 100%;
+    }
+    .button-group {
+        justify-content: center;
+    }
+}
