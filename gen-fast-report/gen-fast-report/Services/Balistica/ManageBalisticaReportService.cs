@@ -195,12 +195,11 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
                 var image = document.AddImage(imageStream);
                 
                 var picture = image.CreatePicture();
-                if(picture.Width != 453)
+                if (picture.Width != 453)
                 {
+                    var ratio = picture.Width / picture.Height;
                     picture.Width = 453;
-                    var res = picture.Width / picture.Height;
-                    var newHeigth = res * picture.Height;
-                    picture.Height = newHeigth;
+                    picture.Height = 453 / ratio;
                 }
 
                 paragraph.AppendPicture(picture);
@@ -243,9 +242,9 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
     {
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Tipo, Utils.GetEnumMemberValue(balisticaRequest.WeaponType));
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Calibre, balisticaRequest.Caliber ?? "N/A");
-        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Marca, balisticaRequest.Brand ?? "N/A");
-        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Modelo, balisticaRequest.Model ?? "N/A");
-        Utils.ReplaceText(document, ReportPlaceholdersBalistica.NumeroSerie, balisticaRequest.SerialNumber ?? "N/A");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Marca, balisticaRequest.Brand ?? "Sem marca aparente");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Modelo, balisticaRequest.Model ?? "Sem modelo");
+        Utils.ReplaceText(document, ReportPlaceholdersBalistica.NumeroSerie, balisticaRequest.SerialNumber ?? "Sem numeação de série");
     }
 
     private void ReplaceAdditionalDetails(DocX document, BalisticaRequest balisticaRequest)
@@ -253,7 +252,17 @@ public class ManageBalisticaReportService  : IManageBalisticaReportService
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Acabamento, Utils.GetEnumMemberValue(balisticaRequest.FinishWeapon));
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Alimentacao, Utils.GetEnumMemberValue(balisticaRequest.WeaponFeed));
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Carregador, Utils.GetEnumMemberValue(balisticaRequest.WeaponCharger));
-        Utils.ReplaceText(document, ReportPlaceholdersBalistica.Capacidade, balisticaRequest.CapacityCharger.ToString());
+        if (balisticaRequest.WeaponCharger != CarregadorArma.SemCarregador)
+        {
+            Utils.ReplaceText(document, ReportPlaceholdersBalistica.Capacidade, balisticaRequest.CapacityCharger.ToString());
+
+        }
+        else
+        {
+            Utils.ReplaceText(document, ReportPlaceholdersBalistica.Capacidade, "Não se aplica, pois não tem carregador.");
+
+        }
+
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.Soleira, Utils.GetEnumMemberValue(balisticaRequest.SoleiraArma));
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.MedidaCano, balisticaRequest.PipeMeasurement ?? "N/A");
         Utils.ReplaceText(document, ReportPlaceholdersBalistica.MedidaTotal, balisticaRequest.TotalMeasure ?? "N/A");
